@@ -49,6 +49,31 @@ app.get("/api/wx_openid", async (req, res) => {
   }
 });
 
+// Endpoint to initiate WeChat OAuth
+app.get('/auth/wechat', (req, res) => {
+  const { code } = req.query;
+  // const winxinAppId = 'wxeb4ce15752cf1d30'; // 'wxe78a01a0ffd9a5b8';
+  // const winxinAppSecret = '8de5c379ac62cf9a5f25c607f7be6cc0'; // 'f83ef6e48cc8f7688e4d713e59667712';
+  const appId = 'wxeb4ce15752cf1d30';
+  const appSecret = '8de5c379ac62cf9a5f25c607f7be6cc0';
+
+  // Exchange code for access token
+  axios.get(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appId}&secret=${appSecret}&code=${code}&grant_type=authorization_code`)
+    .then(response => {
+      const { access_token, openid } = response.data;
+      // Here you have the openid, you can do further processing
+      res.send({
+        code: 0,
+        data: {openid},
+      });
+    })
+    .catch(error => {
+      console.error('Error exchanging code for access token:', error.response.data);
+      res.status(500).send('Error occurred');
+    });
+});
+
+
 const port = process.env.PORT || 80;
 
 async function bootstrap() {
