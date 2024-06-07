@@ -184,7 +184,7 @@ app.get('/wx_config', async (req, res) => {
     const signature = getSignature(jsapiTicket, nonceStr, timestamp, url);
     res.send({
       code: 0,
-      data: {appId: appId2, timestamp, nonceStr, signature, url, token: jsapiTicket},
+      data: {appId: appId2, timestamp, nonceStr, signature, url, ticket: jsapiTicket},
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get config' });
