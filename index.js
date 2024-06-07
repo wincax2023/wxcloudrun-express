@@ -168,7 +168,7 @@ const getSignature = (ticket, nonceStr, timestamp, url) => {
   return crypto.createHash('sha1').update(string).digest('hex');
 };
 
-app.get('/wx-config', async (req, res) => {
+app.get('/wx_config', async (req, res) => {
   const url = req.query.url;
 
   try {
