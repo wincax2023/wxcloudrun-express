@@ -12,6 +12,8 @@ const appId = 'wxeb4ce15752cf1d30';
 const appSecret = '8de5c379ac62cf9a5f25c607f7be6cc0';
 // 填写你在微信公众平台上设置的 Token
 const TOKEN = 'wincax';
+let jsapiTicket = '';
+let ticketExpires = 0;
 
 // 使用 NodeCache 来缓存 access_token
 const cache = new NodeCache({ checkperiod: 60 });
@@ -116,7 +118,7 @@ app.get('/getAccessToken', async (req, res) => {
     const token = await getAccessToken();
     res.send({
       code: 0,
-      token: {access_token: token},
+      data: {access_token: token},
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get access_token' });
@@ -129,7 +131,7 @@ app.get('/refreshAccessToken', async (req, res) => {
     const token = await getAccessToken();
     res.send({
       code: 0,
-      token: {access_token: token},
+      data: {access_token: token},
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to refresh access_token' });
@@ -153,6 +155,38 @@ app.get('/wechat', (req, res) => {
     res.send(echostr);
   } else {
     res.send('Invalid signature');
+  }
+});
+
+const getJsapiTicket = async (accessToken) => {
+  const response = await axios.get(`https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=${accessToken}&type=jsapi`);
+  return response.data.ticket;
+};
+
+const getSignature = (ticket, nonceStr, timestamp, url) => {
+  const string = `jsapi_ticket=${ticket}&noncestr=${nonceStr}&timestamp=${timestamp}&url=${url}`;
+  return crypto.createHash('sha1').update(string).digest('hex');
+};
+
+app.get('/wx-config', async (req, res) => {
+  const url = req.query.url;
+
+  try {
+    if (!jsapiTicket || Date.now() > ticketExpires) {
+      const accessToken = await getAccessToken();
+      jsapiTicket = await getJsapiTicket(accessToken);
+      ticketExpires = Date.now() + 7000 * 1000; // 7000 seconds
+    }
+  
+    const nonceStr = Math.random().toString(36).substr(2, 15);
+    const timestamp = Math.floor(Date.now() / 1000);
+    const signature = getSignature(jsapiTicket, nonceStr, timestamp, url);
+    res.send({
+      code: 0,
+      data: {appId, timestamp, nonceStr, signature},
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get config' });
   }
 });
 
