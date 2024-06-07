@@ -50,6 +50,7 @@ setInterval(refreshToken, 3600000);
 
 const getJsapiTicket = async (accessToken) => {
   const response = await axios.get(`https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=${accessToken}&type=jsapi`);
+  console.log('getJsapiTicket:', response);
   return response.data.ticket;
 };
 
@@ -173,7 +174,7 @@ app.get('/wx_config', async (req, res) => {
   const url = req.query.url;
 
   try {
-    if (!jsapiTicket || Date.now() > ticketExpires) {
+    if (jsapiTicket === undefined || !jsapiTicket || Date.now() > ticketExpires) {
       const accessToken = await getAccessToken();
       jsapiTicket = await getJsapiTicket(accessToken);
       ticketExpires = Date.now() + 7000 * 1000; // 7000 seconds
