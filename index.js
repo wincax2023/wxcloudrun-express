@@ -10,6 +10,9 @@ const NodeCache = require( "node-cache" );
 
 const appId = 'wxeb4ce15752cf1d30';
 const appSecret = '8de5c379ac62cf9a5f25c607f7be6cc0';
+
+const appId2 = 'wxe78a01a0ffd9a5b8';
+const appSecret2 = 'f115cd0740649b4a4373a29cfb4dcf02';
 // 填写你在微信公众平台上设置的 Token
 const TOKEN = 'wincax';
 let jsapiTicket = '';
@@ -25,7 +28,7 @@ const getAccessToken = async () => {
     return token;
   }
 
-  const response = await axios.get(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`);
+  const response = await axios.get(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId2}&secret=${appSecret2}`);
   const { access_token, expires_in } = response.data;
 
   // 将 access_token 缓存，并设置为提前 300 秒刷新
@@ -44,6 +47,17 @@ const refreshToken = async () => {
 
 // 每 1 小时刷新一次
 setInterval(refreshToken, 3600000);
+
+const getJsapiTicket = async (accessToken) => {
+  const response = await axios.get(`https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=${accessToken}&type=jsapi`);
+  return response.data.ticket;
+};
+
+const getSignature = (ticket, nonceStr, timestamp, url) => {
+  const string = `jsapi_ticket=${ticket}&noncestr=${nonceStr}&timestamp=${timestamp}&url=${url}`;
+  return crypto.createHash('sha1').update(string).digest('hex');
+};
+
 
 const app = express();
 app.use(express.urlencoded({ extended: false }));
@@ -91,10 +105,6 @@ app.get("/api/wx_openid", async (req, res) => {
 // Endpoint to initiate WeChat OAuth
 app.get('/auth/wechat', (req, res) => {
   const { code } = req.query;
-  // const winxinAppId = 'wxeb4ce15752cf1d30'; // 'wxe78a01a0ffd9a5b8';
-  // const winxinAppSecret = '8de5c379ac62cf9a5f25c607f7be6cc0'; // 'f83ef6e48cc8f7688e4d713e59667712';
-  // const appId = 'wxeb4ce15752cf1d30';
-  // const appSecret = '8de5c379ac62cf9a5f25c607f7be6cc0';
 
   // Exchange code for access token
   axios.get(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appId}&secret=${appSecret}&code=${code}&grant_type=authorization_code`)
@@ -158,16 +168,6 @@ app.get('/wechat', (req, res) => {
   }
 });
 
-const getJsapiTicket = async (accessToken) => {
-  const response = await axios.get(`https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=${accessToken}&type=jsapi`);
-  return response.data.ticket;
-};
-
-const getSignature = (ticket, nonceStr, timestamp, url) => {
-  const string = `jsapi_ticket=${ticket}&noncestr=${nonceStr}&timestamp=${timestamp}&url=${url}`;
-  return crypto.createHash('sha1').update(string).digest('hex');
-};
-
 app.get('/wx_config', async (req, res) => {
   const url = req.query.url;
 
@@ -183,7 +183,7 @@ app.get('/wx_config', async (req, res) => {
     const signature = getSignature(jsapiTicket, nonceStr, timestamp, url);
     res.send({
       code: 0,
-      data: {appId, timestamp, nonceStr, signature},
+      data: {appId2, timestamp, nonceStr, signature},
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get config' });
