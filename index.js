@@ -4,11 +4,13 @@ const cors = require("cors");
 const morgan = require("morgan");
 const { init: initDB, Counter } = require("./db");
 const axios = require('axios');
-
+const crypto = require('crypto');
 const logger = morgan("tiny");
 
 const appId = 'wxeb4ce15752cf1d30';
 const appSecret = '8de5c379ac62cf9a5f25c607f7be6cc0';
+// 填写你在微信公众平台上设置的 Token
+const TOKEN = 'wincax';
 
 // 使用 NodeCache 来缓存 access_token
 const cache = new NodeCache({ checkperiod: 60 });
@@ -133,6 +135,25 @@ app.get('/refreshAccessToken', async (req, res) => {
   }
 });
 
+// 验证微信服务器地址的有效性
+app.get('/wechat', (req, res) => {
+  const { signature, timestamp, nonce, echostr } = req.query;
+
+  // 1. 将 token、timestamp、nonce 三个参数进行字典序排序
+  const array = [TOKEN, timestamp, nonce].sort();
+  const tempStr = array.join('');
+
+  // 2. 将三个参数字符串拼接成一个字符串进行 sha1 加密
+  const hashCode = crypto.createHash('sha1'); // 创建加密类型
+  const resultCode = hashCode.update(tempStr, 'utf8').digest('hex'); // 对传入的字符串进行加密
+
+  // 3. 开发者获得加密后的字符串可与 signature 对比，标识该请求来源于微信
+  if (resultCode === signature) {
+    res.send(echostr);
+  } else {
+    res.send('Invalid signature');
+  }
+});
 
 const port = process.env.PORT || 80;
 
