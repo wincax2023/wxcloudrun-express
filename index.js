@@ -7,6 +7,39 @@ const axios = require('axios');
 
 const logger = morgan("tiny");
 
+const appId = 'wxeb4ce15752cf1d30';
+const appSecret = '8de5c379ac62cf9a5f25c607f7be6cc0';
+
+// 使用 NodeCache 来缓存 access_token
+const cache = new NodeCache({ checkperiod: 60 });
+
+// 获取 access_token 的函数
+const getAccessToken = async () => {
+  const token = cache.get('access_token');
+  if (token) {
+    return token;
+  }
+
+  const response = await axios.get(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`);
+  const { access_token, expires_in } = response.data;
+
+  // 将 access_token 缓存，并设置为提前 300 秒刷新
+  cache.set('access_token', access_token, expires_in - 300);
+  return access_token;
+};
+
+// 定时刷新 access_token
+const refreshToken = async () => {
+  try {
+    await getAccessToken();
+  } catch (error) {
+    console.error('Error refreshing access_token:', error);
+  }
+};
+
+// 每 1 小时刷新一次
+setInterval(refreshToken, 3600000);
+
 const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -55,8 +88,8 @@ app.get('/auth/wechat', (req, res) => {
   const { code } = req.query;
   // const winxinAppId = 'wxeb4ce15752cf1d30'; // 'wxe78a01a0ffd9a5b8';
   // const winxinAppSecret = '8de5c379ac62cf9a5f25c607f7be6cc0'; // 'f83ef6e48cc8f7688e4d713e59667712';
-  const appId = 'wxeb4ce15752cf1d30';
-  const appSecret = '8de5c379ac62cf9a5f25c607f7be6cc0';
+  // const appId = 'wxeb4ce15752cf1d30';
+  // const appSecret = '8de5c379ac62cf9a5f25c607f7be6cc0';
 
   // Exchange code for access token
   axios.get(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appId}&secret=${appSecret}&code=${code}&grant_type=authorization_code`)
@@ -72,6 +105,32 @@ app.get('/auth/wechat', (req, res) => {
       console.error('Error exchanging code for access token:', error.response.data);
       res.status(500).send('Error occurred');
     });
+});
+
+// 提供接口供其他业务服务器获取当前有效的 access_token
+app.get('/getAccessToken', async (req, res) => {
+  try {
+    const token = await getAccessToken();
+    res.send({
+      code: 0,
+      token: {access_token: token},
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get access_token' });
+  }
+});
+
+// 被动刷新 access_token 的接口
+app.get('/refreshAccessToken', async (req, res) => {
+  try {
+    const token = await getAccessToken();
+    res.send({
+      code: 0,
+      token: {access_token: token},
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to refresh access_token' });
+  }
 });
 
 
