@@ -178,7 +178,7 @@ app.get('/wx_config', async (req, res) => {
       jsapiTicket = await getJsapiTicket(accessToken);
       ticketExpires = Date.now() + 7000 * 1000; // 7000 seconds
     }
-  
+    console.log('jsapiTicket:', jsapiTicket);
     const nonceStr = Math.random().toString(36).substr(2, 15);
     const timestamp = Math.floor(Date.now() / 1000);
     const signature = getSignature(jsapiTicket, nonceStr, timestamp, url);
