@@ -6,6 +6,7 @@ const { init: initDB, Counter } = require("./db");
 const axios = require('axios');
 const crypto = require('crypto');
 const logger = morgan("tiny");
+const NodeCache = require( "node-cache" );
 
 const appId = 'wxeb4ce15752cf1d30';
 const appSecret = '8de5c379ac62cf9a5f25c607f7be6cc0';
