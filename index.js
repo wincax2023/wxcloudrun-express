@@ -31,16 +31,21 @@ const getAccessToken = async () => {
   }
 
   console.log('token:', token);
+  try {
+    const response = await axios.get(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId2}&secret=${appSecret2}`);
 
-  const response = await axios.get(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId2}&secret=${appSecret2}`);
+    console.log('client_credential:', access_token);
+  
+    const { access_token, expires_in } = response.data;
+  
+    // 将 access_token 缓存，并设置为提前 300 秒刷新
+    cache.set('access_token_id', {token: access_token, appId: appId2}, expires_in - 300);
+    return access_token;   
+  } catch (error) {
+    console.error('Error getting access_token:', error);
+    return '';   
+  }
 
-  console.log('client_credential:', access_token);
-
-  const { access_token, expires_in } = response.data;
-
-  // 将 access_token 缓存，并设置为提前 300 秒刷新
-  cache.set('access_token_id', {token: access_token, appId: appId2}, expires_in - 300);
-  return access_token;
 };
 
 // 定时刷新 access_token
