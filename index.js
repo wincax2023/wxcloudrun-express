@@ -7,6 +7,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const logger = morgan("tiny");
 const NodeCache = require( "node-cache" );
+const { log } = require("console");
 
 const appId = 'wxeb4ce15752cf1d30';
 const appSecret = '8de5c379ac62cf9a5f25c607f7be6cc0';
@@ -29,7 +30,12 @@ const getAccessToken = async () => {
     return token;
   }
 
+  console.log('token:', token);
+
   const response = await axios.get(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId2}&secret=${appSecret2}`);
+
+  console.log('client_credential:', access_token);
+
   const { access_token, expires_in } = response.data;
 
   // 将 access_token 缓存，并设置为提前 300 秒刷新
