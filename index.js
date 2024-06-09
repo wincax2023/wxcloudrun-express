@@ -23,8 +23,9 @@ const cache = new NodeCache({ checkperiod: 60 });
 
 // 获取 access_token 的函数
 const getAccessToken = async () => {
-  const token = cache.get('access_token');
-  if (token) {
+  const data = cache.get('access_token_id') || {};
+  const { token, appId} = data;
+  if (token && appId === appId2) {
     return token;
   }
 
@@ -32,7 +33,7 @@ const getAccessToken = async () => {
   const { access_token, expires_in } = response.data;
 
   // 将 access_token 缓存，并设置为提前 300 秒刷新
-  cache.set('access_token', access_token, expires_in - 300);
+  cache.set('access_token_id', {token: access_token, appId: appId2}, expires_in - 300);
   return access_token;
 };
 
