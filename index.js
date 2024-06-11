@@ -9,11 +9,11 @@ const logger = morgan("tiny");
 const NodeCache = require( "node-cache" );
 const { log } = require("console");
 
-const appId = 'wxeb4ce15752cf1d30';
-const appSecret = '8de5c379ac62cf9a5f25c607f7be6cc0';
+const appId = 'wx2f43f29ff9867f52'; //  'wxeb4ce15752cf1d30';
+const appSecret = 'd17dc64b9d3b2de939e5fe293c229ed6'; // '8de5c379ac62cf9a5f25c607f7be6cc0';
 
-const appId2 = 'wxe78a01a0ffd9a5b8';
-const appSecret2 = 'f115cd0740649b4a4373a29cfb4dcf02';
+// const appId2 = 'wxe78a01a0ffd9a5b8';
+// const appSecret2 = 'f115cd0740649b4a4373a29cfb4dcf02';
 // 填写你在微信公众平台上设置的 Token
 const TOKEN = 'wincax';
 let jsapiTicket = '';
@@ -26,20 +26,20 @@ const cache = new NodeCache({ checkperiod: 60 });
 const getAccessToken = async () => {
   const data = cache.get('access_token_id') || {};
   const { token, appId} = data;
-  if (token && appId === appId2) {
+  if (token && appId === appId) {
     return token;
   }
 
   console.log('token:', token);
   try {
-    const response = await axios.get(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId2}&secret=${appSecret2}`);
+    const response = await axios.get(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`);
 
     console.log('client_credential:', access_token);
   
     const { access_token, expires_in } = response.data;
   
     // 将 access_token 缓存，并设置为提前 300 秒刷新
-    cache.set('access_token_id', {token: access_token, appId: appId2}, expires_in - 300);
+    cache.set('access_token_id', {token: access_token, appId: appId}, expires_in - 300);
     return access_token;   
   } catch (error) {
     console.error('Error getting access_token:', error);
@@ -197,7 +197,7 @@ app.get('/wx_config', async (req, res) => {
     const signature = getSignature(jsapiTicket, nonceStr, timestamp, url);
     res.send({
       code: 0,
-      data: {appId: appId2, timestamp, nonceStr, signature, url, ticket: jsapiTicket},
+      data: {appId: appId, timestamp, nonceStr, signature, url, ticket: jsapiTicket},
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get config' });
