@@ -37,7 +37,7 @@ const getAccessToken = async () => {
     const response = await axios.get(url);
   
     const { access_token, expires_in } = response.data;
-    console.log('client_credential:', access_token);
+    console.log('client_credential:', response);
   
     // 将 access_token 缓存，并设置为提前 300 秒刷新
     cache.set('access_token_id', {token: access_token, appId: appId}, expires_in - 300);
