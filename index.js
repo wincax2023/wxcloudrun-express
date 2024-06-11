@@ -35,9 +35,12 @@ const getAccessToken = async () => {
     const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
     console.log('getAccessToken url ', url);
     const response = await axios.get(url);
-  
-    const { access_token, expires_in } = response.data;
-    console.log('client_credential:', response);
+    // {
+    //     "access_token": "81_xwlntQYpIXVSZFQX9pPAOib_gCDLozS04CP1dmM50xvlYGbz33zIF7Ds0wDoDEe3DhcLQ4egki1_irgWPuOsh0nAqH2nvNiDo2kOT6UsxfXcGw6v8WO284Q6V1cKSJiAAAVDU", 
+    //     "expires_in": 7199
+    // }
+    const { access_token, expires_in } = response;
+    console.log('client_credential:', access_token, expires_in);
   
     // 将 access_token 缓存，并设置为提前 300 秒刷新
     cache.set('access_token_id', {token: access_token, appId: appId}, expires_in - 300);
