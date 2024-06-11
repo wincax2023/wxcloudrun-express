@@ -39,7 +39,7 @@ const getAccessToken = async () => {
     //     "access_token": "81_xwlntQYpIXVSZFQX9pPAOib_gCDLozS04CP1dmM50xvlYGbz33zIF7Ds0wDoDEe3DhcLQ4egki1_irgWPuOsh0nAqH2nvNiDo2kOT6UsxfXcGw6v8WO284Q6V1cKSJiAAAVDU", 
     //     "expires_in": 7199
     // }
-    console.log('client_credential:', JSON.stringify(response));
+    console.log('client_credential:', response.data);
     const { access_token, expires_in } = response.data;
     
   
