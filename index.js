@@ -32,11 +32,12 @@ const getAccessToken = async () => {
 
   console.log('token:', token);
   try {
-    const response = await axios.get(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`);
-
-    console.log('client_credential:', access_token);
+    const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
+    console.log('getAccessToken url ', url);
+    const response = await axios.get(url);
   
     const { access_token, expires_in } = response.data;
+    console.log('client_credential:', access_token);
   
     // 将 access_token 缓存，并设置为提前 300 秒刷新
     cache.set('access_token_id', {token: access_token, appId: appId}, expires_in - 300);
