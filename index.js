@@ -124,9 +124,12 @@ app.get("/api/wx_openid", async (req, res) => {
 // Endpoint to initiate WeChat OAuth
 app.get('/auth/wechat', (req, res) => {
   const { code } = req.query;
+  const url = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appId}&secret=${appSecret}&code=${code}&grant_type=authorization_code`;
+
+  console.log('/auth/wechat:', url);
 
   // Exchange code for access token
-  axios.get(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appId}&secret=${appSecret}&code=${code}&grant_type=authorization_code`)
+  axios.get(url)
     .then(response => {
       const { access_token, openid } = response.data;
       console.log('openid:', response.data);
