@@ -129,6 +129,7 @@ app.get('/auth/wechat', (req, res) => {
   axios.get(`https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appId}&secret=${appSecret}&code=${code}&grant_type=authorization_code`)
     .then(response => {
       const { access_token, openid } = response.data;
+      console.log('openid:', openid);
       // Here you have the openid, you can do further processing
       res.send({
         code: 0,
