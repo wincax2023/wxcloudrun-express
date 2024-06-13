@@ -32,7 +32,8 @@ const getAccessToken = async () => {
 
   console.log('token:', token);
   try {
-    const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
+    // https://api.weixin.qq.com/cgi-bin/stable_token
+    const url = `https://api.weixin.qq.com/cgi-bin/stable_token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
     console.log('getAccessToken url ', url);
     const response = await axios.get(url);
     // {
