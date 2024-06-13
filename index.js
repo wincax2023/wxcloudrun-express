@@ -213,31 +213,67 @@ app.get('/wx_config', async (req, res) => {
   }
 });
 
+async function getRedirectedUrl(url) {
+  try {
+      // 创建一个 Axios 实例
+      const instance = axios.create({
+          maxRedirects: 0 // 禁止 Axios 自动处理重定向
+      });
+
+      // 使用拦截器捕获响应
+      instance.interceptors.response.use(response => response, error => {
+          if (error.response && error.response.status >= 300 && error.response.status < 400) {
+              // 如果响应状态码是 3xx，表示是重定向，获取重定向的 URL
+              return Promise.resolve(error.response.headers.location);
+          }
+          return Promise.reject(error);
+      });
+
+      // 发送 GET 请求
+      const response = await instance.get(url);
+
+      // 如果没有发生重定向，返回原始 URL
+      return response.config.url;
+  } catch (error) {
+      if (error.response && error.response.status >= 300 && error.response.status < 400) {
+          // 返回重定向的 URL
+          return error.response.headers.location;
+      } else {
+          console.error('Error fetching the URL:', error.message);
+          throw error;
+      }
+  }
+}
 app.get('/wx_openid', async (req, res) => {
   const redirectUri = req.query.url;
 
   try {
     const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appId}&redirect_uri=${redirectUri}&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect`;
-    axios.get(url, {
-      maxRedirects: 0 // 不跟随任何重定向
-    })
-    .then(response => {
-      // 检查响应状态码
-      if (response.status === 302) {
-        // 重定向的 URL 可以在 response.headers['location'] 中找到
-        console.log('Redirected URL:', response.headers['location']);
-        // const url = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appId}&secret=${appSecret}&code=${code}&grant_type=authorization_code`;
-      }
-      // Here you have the openid, you can do further processing
-      res.send({
-        code: 0,
-        data: {}, // openid
-      });
-    })
-    .catch(error => {
-      console.error('Error exchanging code for openid:', error.response.data);
-      res.status(500).send('Error occurred');
+    getRedirectedUrl(url).then(redirectedUrl => {
+      console.log('Redirected URL:', redirectedUrl);
+    }).catch(error => {
+        console.error('Failed to get redirected URL:', error);
     });
+    // axios.get(url, {
+    //   maxRedirects: 0 // 不跟随任何重定向
+    // })
+    // .then(response => {
+    //   // 检查响应状态码
+    //   if (response.status === 302) {
+    //     // 重定向的 URL 可以在 response.headers['location'] 中找到
+    //     console.log('Redirected URL:', response.headers['location']);
+    //     // const url = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appId}&secret=${appSecret}&code=${code}&grant_type=authorization_code`;
+    //   }
+    //   // Here you have the openid, you can do further processing
+    //   res.send({
+    //     code: 0,
+    //     data: {}, // openid
+    //   });
+    // })
+    // .catch(error => {
+    //   console.error('Error exchanging code for openid:', error.response.data);
+    //   res.status(500).send('Error occurred');
+    // });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get oppenid' });
   }
