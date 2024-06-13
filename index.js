@@ -213,6 +213,30 @@ app.get('/wx_config', async (req, res) => {
   }
 });
 
+app.get('/wx_openid', async (req, res) => {
+  const redirectUri = req.query.url;
+
+  try {
+    const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appId}&redirect_uri=${redirectUri}&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect`;
+    axios.get(url)
+    .then(response => {
+      const { access_token, openid } = response.data;
+      console.log('wechat_redirect:', response.data);
+      // Here you have the openid, you can do further processing
+      res.send({
+        code: 0,
+        data: {openid},
+      });
+    })
+    .catch(error => {
+      console.error('Error exchanging code for openid:', error.response.data);
+      res.status(500).send('Error occurred');
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get oppenid' });
+  }
+});
+
 const port = process.env.PORT || 80;
 
 async function bootstrap() {
