@@ -231,9 +231,10 @@ async function getRedirectedUrl(url) {
 
       // 发送 GET 请求
       const response = await instance.get(url);
+      console.log('response:', response);
 
       // 如果没有发生重定向，返回原始 URL
-      return response.headers['location'];
+      return response;
   } catch (error) {
       if (error.response && error.response.status >= 300 && error.response.status < 400) {
           // 返回重定向的 URL
