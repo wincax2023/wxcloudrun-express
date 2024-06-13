@@ -218,14 +218,20 @@ app.get('/wx_openid', async (req, res) => {
 
   try {
     const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appId}&redirect_uri=${redirectUri}&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect`;
-    axios.get(url)
+    axios.get(url, {
+      maxRedirects: 0 // 不跟随任何重定向
+    })
     .then(response => {
-      const { access_token, openid } = response.data;
-      console.log('wechat_redirect:', response.data);
+      // 检查响应状态码
+      if (response.status === 302) {
+        // 重定向的 URL 可以在 response.headers['location'] 中找到
+        console.log('Redirected URL:', response.headers['location']);
+        // const url = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appId}&secret=${appSecret}&code=${code}&grant_type=authorization_code`;
+      }
       // Here you have the openid, you can do further processing
       res.send({
         code: 0,
-        data: {openid},
+        data: {}, // openid
       });
     })
     .catch(error => {
